@@ -191,40 +191,32 @@ class DNSDataAnalyzer:
         }
 
 def main():
-    """主函数"""
     print("DNS流量数据分析 - 阶段1: 数据探索")
     print("="*60)
     
-    # 初始化分析器
     analyzer = DNSDataAnalyzer("data/CSV")
     
-    # 步骤1: 解压文件
     zip_count = analyzer.extract_zip_files()
     if zip_count == 0:
         print("没有找到ZIP文件，检查数据路径")
         return
     
-    # 步骤2: 查找CSV文件
     attack_files, benign_files = analyzer.find_csv_files()
     
     if not attack_files and not benign_files:
         print("错误: 没有找到任何CSV文件!")
         return
     
-    # 步骤3: 加载样本数据
     combined_df, attack_df, benign_df = analyzer.load_sample_data(attack_files, benign_files)
     
     if combined_df is None:
         print("错误: 无法加载数据!")
         return
     
-    # 步骤4: 基础分析
     basic_info = analyzer.basic_data_analysis(combined_df)
     
-    # 步骤5: 统计分析
     stats_info = analyzer.statistical_analysis(combined_df)
     
-    # === 新增：保存处理后的数据 ===
     print("\n保存处理后的数据...")
     processed_dir = Path("data/processed")
     processed_dir.mkdir(parents=True, exist_ok=True)
@@ -235,11 +227,9 @@ def main():
     benign_df.to_pickle(processed_dir / "benign_data.pkl")
     
     print(f"数据已保存到 {processed_dir}")
-    # === 新增结束 ===
     
     print("\n" + "="*60)
-    print("阶段1数据探索完成!")
-    print("下一步: 基于探索结果进行特征工程")
+    print("阶段1完成!")
 
 if __name__ == "__main__":
     main()

@@ -13,7 +13,6 @@ class DNSFeatureEngineer:
         self.label_encoders = {}
         
     def load_data(self):
-        """加载阶段1处理后的数据"""
         try:
             combined_df = pd.read_pickle('data/processed/sample_data.pkl')
             print(f"成功加载数据: {combined_df.shape}")
@@ -23,7 +22,6 @@ class DNSFeatureEngineer:
             return None
     
     def remove_constant_features(self, df):
-        """移除常量或几乎常量的特征"""
         print("\n移除常量特征...")
         
         # 计算每个特征的标准差
@@ -43,7 +41,6 @@ class DNSFeatureEngineer:
         return df
     
     def process_categorical_features(self, df):
-        """处理分类特征"""
         print("\n处理分类特征...")
         
         categorical_features = df.select_dtypes(include=['object']).columns
@@ -80,24 +77,19 @@ class DNSFeatureEngineer:
         return df
     
     def create_new_features(self, df):
-        """创建新的衍生特征"""
         print("\n创建衍生特征...")
         
-        # 1. 创建频率特征的总和
         frequency_features = [col for col in df.columns if 'frequency' in col]
         if frequency_features:
             df['total_frequency'] = df[frequency_features].sum(axis=1)
         
-        # 2. 创建TTL特征的比率
         if 'ttl_mean' in df.columns and 'ttl_variance' in df.columns:
             df['ttl_std'] = np.sqrt(df['ttl_variance'].clip(lower=0))
             df['ttl_coefficient_variation'] = df['ttl_std'] / (df['ttl_mean'] + 1e-6)  # 避免除0
-        
-        # 3. 创建域名复杂性特征
+
         if 'rr_name_length' in df.columns and 'rr_name_entropy' in df.columns:
             df['name_complexity'] = df['rr_name_length'] * df['rr_name_entropy']
-        
-        # 4. 创建记录类型多样性特征
+
         if 'rr_count' in df.columns and len(frequency_features) > 0:
             non_zero_freq = (df[frequency_features] > 0).sum(axis=1)
             df['record_type_diversity'] = non_zero_freq / (df['rr_count'] + 1e-6)
@@ -106,7 +98,6 @@ class DNSFeatureEngineer:
         return df
     
     def prepare_model_data(self, df):
-        """准备模型训练数据"""
         print("\n准备模型训练数据...")
         
         # 选择数值特征（排除标签和原始分类特征）
@@ -135,7 +126,6 @@ class DNSFeatureEngineer:
         return X_train, X_test, y_train, y_test, feature_columns
     
     def analyze_feature_importance(self, df, feature_columns):
-        """分析特征重要性（使用相关系数）"""
         print("\n分析特征与标签的相关性...")
         
         correlation_with_label = df[feature_columns + ['label']].corr()['label'].abs().sort_values(ascending=False)
@@ -157,7 +147,6 @@ class DNSFeatureEngineer:
         return correlation_with_label
     
     def run_feature_engineering(self):
-        """运行完整的特征工程流程"""
         print("DNS流量数据分析 - 阶段2: 特征工程")
         print("="*60)
         
@@ -168,34 +157,26 @@ class DNSFeatureEngineer:
         
         self.original_columns = df.columns.tolist()
         
-        # 步骤1: 移除常量特征
         df = self.remove_constant_features(df)
         
-        # 步骤2: 处理分类特征
         df = self.process_categorical_features(df)
-        
-        # 步骤3: 创建新特征
+
         df = self.create_new_features(df)
-        
-        # 步骤4: 准备模型数据
+
         X_train, X_test, y_train, y_test, feature_columns = self.prepare_model_data(df)
-        
-        # 步骤5: 分析特征重要性
+
         correlation_analysis = self.analyze_feature_importance(df, feature_columns)
-        
-        # 保存处理后的数据
+
         df.to_pickle('data/processed/engineered_data.pkl')
         X_train.to_pickle('data/processed/X_train.pkl')
         X_test.to_pickle('data/processed/X_test.pkl')
         y_train.to_pickle('data/processed/y_train.pkl')
         y_test.to_pickle('data/processed/y_test.pkl')
-        
-        # 保存特征列表
+     
         pd.Series(feature_columns).to_pickle('data/processed/feature_columns.pkl')
         
         print("\n" + "="*60)
         print("阶段2完成!")
-        print("下一步: 模型训练和评估")
         
         return {
             'X_train': X_train,
@@ -211,7 +192,6 @@ def main():
     results = engineer.run_feature_engineering()
     
     if results:
-        print(f"\n数据准备完成，可以开始模型训练!")
         print(f"特征数量: {len(results['feature_columns'])}")
         print(f"训练样本: {len(results['X_train'])}")
         print(f"测试样本: {len(results['X_test'])}")

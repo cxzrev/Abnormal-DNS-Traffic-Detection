@@ -38,8 +38,6 @@
 
 ## 安装和运行
 
-### 1. 环境配置
-
 ```bash
 # 克隆项目
 git clone <repository-url>

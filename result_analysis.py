@@ -8,7 +8,6 @@ from sklearn.metrics import classification_report, confusion_matrix, roc_curve, 
 import warnings
 warnings.filterwarnings('ignore')
 
-# 设置英文标签避免字体问题
 plt.rcParams.update({
     'font.family': 'DejaVu Sans',
     'font.size': 12
@@ -19,7 +18,6 @@ class ResultAnalyzer:
         self.results = {}
         
     def load_results(self):
-        """加载所有结果和数据"""
         print("加载模型结果和数据...")
         
         try:
@@ -41,7 +39,6 @@ class ResultAnalyzer:
             return False
     
     def detailed_model_analysis(self):
-        """详细模型分析"""
         print("\n" + "="*50)
         print("详细模型性能分析")
         print("="*50)
@@ -77,7 +74,6 @@ class ResultAnalyzer:
         }
     
     def plot_roc_curves(self):
-        """绘制ROC曲线"""
         print("\n绘制ROC曲线...")
         
         plt.figure(figsize=(10, 8))
@@ -113,7 +109,6 @@ class ResultAnalyzer:
         plt.show()
     
     def feature_importance_analysis(self):
-        """分析特征重要性"""
         print("\n分析特征重要性...")
         
         if hasattr(self.rf_model, 'feature_importances_'):
@@ -145,7 +140,6 @@ class ResultAnalyzer:
             return None, None
     
     def error_analysis(self, predictions):
-        """错误分析"""
         print("\n错误分析...")
         
         # 找出错误分类的样本
@@ -183,7 +177,6 @@ class ResultAnalyzer:
         return None
     
     def generate_final_report(self):
-        """生成最终报告"""
         print("\n" + "="*50)
         print("生成最终分析报告")
         print("="*50)
@@ -249,7 +242,6 @@ class ResultAnalyzer:
         return report
     
     def run_analysis(self):
-        """运行完整分析"""
         print("DNS异常流量检测 - 阶段4: 结果分析")
         print("="*60)
         

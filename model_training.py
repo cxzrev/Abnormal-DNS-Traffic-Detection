@@ -15,7 +15,6 @@ class DNSModelTrainer:
         self.results = {}
         
     def load_engineered_data(self):
-        """加载特征工程后的数据"""
         try:
             X_train = pd.read_pickle('data/processed/X_train.pkl')
             X_test = pd.read_pickle('data/processed/X_test.pkl')
@@ -32,7 +31,6 @@ class DNSModelTrainer:
             return None, None, None, None, None
     
     def train_models(self, X_train, X_test, y_train, y_test):
-        """训练多个模型进行比较"""
         print("\n训练机器学习模型...")
         
         # 定义模型
@@ -42,16 +40,13 @@ class DNSModelTrainer:
             'SVM': SVC(probability=True, random_state=42)
         }
         
-        # 训练并评估每个模型
         for name, model in models.items():
             print(f"\n训练 {name}...")
             model.fit(X_train, y_train)
             
-            # 预测
             y_pred = model.predict(X_test)
             y_pred_proba = model.predict_proba(X_test)[:, 1] if hasattr(model, 'predict_proba') else None
             
-            # 评估
             accuracy = accuracy_score(y_test, y_pred)
             auc = roc_auc_score(y_test, y_pred_proba) if y_pred_proba is not None else None
             
@@ -73,12 +68,10 @@ class DNSModelTrainer:
         return self.results
     
     def evaluate_models(self, X_test, y_test):
-        """全面评估模型性能"""
         print("\n" + "="*50)
         print("模型性能评估")
         print("="*50)
         
-        # 比较所有模型
         comparison = []
         for name, result in self.results.items():
             comparison.append({
@@ -90,11 +83,9 @@ class DNSModelTrainer:
         comparison_df = pd.DataFrame(comparison)
         print("\n模型性能比较:")
         print(comparison_df)
-        
-        # 绘制性能比较图
+
         plt.figure(figsize=(10, 6))
         
-        # 准确率比较
         plt.subplot(1, 2, 1)
         models = comparison_df['Model']
         accuracies = comparison_df['Accuracy']
@@ -102,8 +93,7 @@ class DNSModelTrainer:
         plt.title('Model Accuracy Comparison')
         plt.xticks(rotation=45)
         plt.ylim(0, 1)
-        
-        # AUC比较（如果有）
+
         auc_values = [x if x != 'N/A' else 0 for x in comparison_df['AUC']]
         if any(auc != 0 for auc in auc_values):
             plt.subplot(1, 2, 2)
@@ -115,16 +105,14 @@ class DNSModelTrainer:
         plt.tight_layout()
         plt.savefig('visualizations/model_comparison.png', dpi=300, bbox_inches='tight')
         plt.show()
-        
-        # 显示最佳模型的详细报告
+
         best_model_name = comparison_df.loc[comparison_df['Accuracy'].idxmax(), 'Model']
         print(f"\n最佳模型: {best_model_name}")
         
         best_result = self.results[best_model_name]
         print(f"\n{best_model_name} 详细分类报告:")
         print(classification_report(y_test, best_result['predictions']))
-        
-        # 绘制混淆矩阵
+
         plt.figure(figsize=(8, 6))
         cm = confusion_matrix(y_test, best_result['predictions'])
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
@@ -140,19 +128,15 @@ class DNSModelTrainer:
         return comparison_df, best_model_name
     
     def run_model_training(self):
-        """运行完整的模型训练流程"""
         print("DNS流量数据分析 - 阶段3: 模型训练")
         print("="*60)
         
-        # 加载数据
         X_train, X_test, y_train, y_test, feature_columns = self.load_engineered_data()
         if X_train is None:
             return
         
-        # 训练模型
         results = self.train_models(X_train, X_test, y_train, y_test)
-        
-        # 评估模型
+
         comparison_df, best_model = self.evaluate_models(X_test, y_test)
         
         print("\n" + "="*60)
